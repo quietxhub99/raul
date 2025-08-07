@@ -125,8 +125,8 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
 local LocalPlayer = Players.LocalPlayer
-local pasteURL = "https://paste.monster/3nn27BS9Atk6/raw/"
-local interval = 1
+local pasteURL = "https://raw.githubusercontent.com/quietxhub99/raul/refs/heads/main/upd.txt"
+local interval = 30
 
 local kicked = false
 local notified = false
@@ -168,8 +168,8 @@ end)
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
-local pasteURL = "https://paste.monster/bnzTAGXXexo3/raw/"
-local interval = 1
+local pasteURL = "https://raw.githubusercontent.com/quietxhub99/raul/refs/heads/main/userblacklist.txt"
+local interval = 30
 
 local kicked = false
 local notified = false

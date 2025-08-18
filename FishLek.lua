@@ -2,7 +2,8 @@
 ----- =======[ Load WindUI ]
 -------------------------------------------
 
-local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+local Version = "1.6.4"
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/download/" .. Version .. "/main.lua"))()
 
 -------------------------------------------
 ----- =======[ GLOBAL FUNCTION ]
@@ -62,17 +63,17 @@ local RodReel = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Animatio
 
 local RodShake = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Animations"):WaitForChild("CastFromFullChargePosition1Hand")
 
--- Pastikan kamu punya Humanoid
 local character = Players.LocalPlayer.Character or Players.LocalPlayer.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 
--- Buat Animator jika belum ada
+
 local animator = humanoid:FindFirstChildOfClass("Animator") or Instance.new("Animator", humanoid)
 
--- Load dan Play animasi
 local RodShake = animator:LoadAnimation(RodShake)
 local RodIdle = animator:LoadAnimation(RodIdle)
 local RodReel = animator:LoadAnimation(RodReel)
+
+local blockNotif = false
 
 -------------------------------------------
 ----- =======[ NOTIFY FUNCTION ]
@@ -114,16 +115,14 @@ local function NotifyWarning(title, message, duration)
     })
 end
 
--------------------------------------------
------ =======[ CONFIRM POPUP ]
--------------------------------------------
 
 local confirmed = false
 WindUI:Popup({
-    Title = "Thanksgiving!",
+    Title = "Important!",
     Icon = "rbxassetid://129260712070622",
     Content = [[
 Thank you for using Premium script!.
+Dont be a Stealer!
 ]],
     Buttons = {
         { Title = "Close", Variant = "Secondary", Callback = function() end },
@@ -138,9 +137,11 @@ repeat task.wait() until confirmed
 ----- =======[ LOAD WINDOW ]
 -------------------------------------------
 
+WindUI.TransparencyValue = 0.3
+
 local Window = WindUI:CreateWindow({
-    Title = "QuietXHub Premium",
-    Icon = "cannabis",
+    Title = "Fish It Premium",
+    Icon = "hop",
     Author = "by Prince",
     Folder = "QuietXHub",
     Size = UDim2.fromOffset(600, 400),
@@ -158,17 +159,23 @@ local Window = WindUI:CreateWindow({
 })
 
 Window:EditOpenButton({
-    Title = "QuietXHub",
-    Icon = "cannabis",
-    CornerRadius = UDim.new(0,16),
+    Title = "QuietXDev",
+    Icon = "hop",
+    CornerRadius = UDim.new(0,19),
     StrokeThickness = 2,
-    Color = ColorSequence.new( -- gradient
+    Color = ColorSequence.new(
         Color3.fromHex("9600FF"), 
         Color3.fromHex("AEBAF8")
     ),
-    --Enabled = false,
     Draggable = true,
 })
+
+Window:Tag({
+    Title = "STABLE",
+    Color = Color3.fromHex("#30ff6a")
+})
+
+
 
 local ConfigManager = Window.ConfigManager
 local myConfig = ConfigManager:CreateConfig("QuietXConfig")
@@ -181,29 +188,44 @@ WindUI:SetNotificationLower(true)
 
 
 local DevTab = Window:Tab({
-    Title = "READ FIRST!",
+    Title = "Feature Guide!",
     Icon = "airplay"
 })
 
-local AutoFish = Window:Tab({ 
+local AllMenu = Window:Section({
+	Title = "All Menu Here",
+	Icon = "tally-3",
+	Opened = false,
+})
+
+local AutoFish = AllMenu:Tab({ 
 	Title = "Auto Fish", 
 	Icon = "fish"
 })
 
-local AutoFarmTab = Window:Tab({
+local AutoFarmTab = AllMenu:Tab({
 	Title = "Auto Farm",
 	Icon = "leaf"
 })
 
-local WeatherTab = Window:Tab({
-	Title = "Auto Weather", 
-	Icon = "cloud-rain"
-	
+local Trade = AllMenu:Tab({
+	Title = "Auto Trade",
+	Icon = "handshake"
 })
 
-local Utils = Window:Tab({
+local Player = AllMenu:Tab({
+    Title = "Player",
+    Icon = "users-round"
+})
+
+local Utils = AllMenu:Tab({
     Title = "Utility",
     Icon = "earth"
+})
+
+local FishNotif = Window:Tab({
+	Title = "Fish Notification",
+	Icon = "bell-ring"
 })
 
 local SettingsTab = Window:Tab({ 
@@ -218,7 +240,7 @@ local SettingsTab = Window:Tab({
 DevTab:Paragraph({
     Title = "Developer",
     Desc = "This is Developer Contact",
-    Color = "Green",
+    Color = "Orange",
     Buttons = {
     	{
     		Title = "Discord Server",
@@ -243,7 +265,7 @@ DevTab:Paragraph({
 
 DevTab:Paragraph({
 	Title = "Feature Guide",
-	Color = "Grey",
+	Color = "Orange",
 	Desc = [[
 ====| Auto Enchant Rod |====
 
@@ -268,18 +290,6 @@ Before using it, I will teach you how to set up Auto Farm.
 
 Please select the island you want to visit.Please select the island you want to farm.
 
-Available Island Codes:
-01 = Crater Islands
-02 = Tropical Grove
-03 = Vulcano
-04 = Coral Reefs
-05 = Winter Fest
-06 = Weather Machine
-07 = Treasure Room
-08 = Deap Sea
-
-Auto Farm Event (Opsional) :
-Enable this if you want to farm during events as well, and leave it on if you don't need it!
 
 Fish Threshold :
 What is "Fish Threshold"? Detects the number of fish you have caught, if it has reached the number you have determined, it will sell all the fish that have been caught, except above legendary.
@@ -293,14 +303,12 @@ What is "Fish Threshold"? Detects the number of fish you have caught, if it has 
 -------------------------------------------
 
 
--- Services
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
--- Remote
+
 local REReplicateTextEffect = ReplicatedStorage.Packages._Index["sleitnick_net@0.2.0"].net["RE/ReplicateTextEffect"]
 
--- Vars
 local autofish = false
 local perfectCast = true
 local customDelay = 1
@@ -308,24 +316,29 @@ local fishingActive = false
 local delayInitialized = false
 
 
-local slowRods = {
-["Astral Rod"] = true,
-["Chrome Rod"] = true,
-["Steampunk Rod"] = true,
-["Lucky Rod"] = true,
-["Midnight Rod"] = true,
-["Demascus Rod"] = true,
-["Grass Rod"] = true,
-["Luck Rod"] = true,
-["Carbon Rod"] = true,
-["Lava Rod"] = true,
-["Starter Rod"] = true
-}
 local fastRods = {
-["Ares Rod"] = true,
-["Angler Rod"] = true,
-["Ghostfinn Rod"] = true
+	["Ares Rod"] = true,
+	["Angler Rod"] = true,
+	["Ghostfinn Rod"] = true 
 }
+
+local mediumRods = {
+	["Astral Rod"] = true,
+	["Chrome Rod"] = true,
+	["Steampunk Rod"] = true
+}
+
+local veryLowRods = {
+	["Lucky Rod"] = true,
+	["Midnight Rod"] = true,
+	["Demascus Rod"] = true,
+	["Grass Rod"] = true,
+	["Luck Rod"] = true,
+	["Carbon Rod"] = true,
+	["Lava Rod"] = true,
+	["Starter Rod"] = true
+}
+
 
 local function getValidRodName()
 local player = Players.LocalPlayer
@@ -337,7 +350,7 @@ for _, tile in ipairs(display:GetChildren()) do
     end)      
     if success and itemNamePath and itemNamePath:IsA("TextLabel") then      
         local name = itemNamePath.Text      
-        if slowRods[name] or fastRods[name] then      
+        if veryLowRods[name] or fastRods[name] or mediumRods[name] then      
             return name      
         end      
     end      
@@ -350,23 +363,25 @@ local function updateDelayBasedOnRod(showNotify)
 if delayInitialized then return end
 
 local rodName = getValidRodName()      
-if rodName then      
-    if slowRods[rodName] then       
-        customDelay = math.random(210, 250) / 100      
-    elseif fastRods[rodName] then      
-        customDelay = math.random(110, 130) / 100      
+if rodName then
+    if fastRods[rodName] then      
+        customDelay = math.random(110, 130) / 100
+    elseif mediumRods[rodName] then
+    	  customDelay = math.random(140, 200) / 100
+    elseif veryLowRods[rodName] then
+    	  customDelay = math.random(300, 500) / 100
     else      
-        customDelay = 2.0      
+        customDelay = 10      
     end      
     delayInitialized = true      
     if showNotify and autofish then      
         NotifySuccess("Rod Detected", string.format("Detected Rod: %s | Delay: %.2fs", rodName, customDelay))      
     end      
 else      
-    customDelay = 2      
+    customDelay = 10      
     delayInitialized = true       
     if showNotify and autofish then      
-        NotifyWarning("Rod Detection Failed", "No valid rod found in list. Default delay 2s applied.")      
+        NotifyWarning("Rod Detection Failed", "No valid rod found in list. Default delay 10s applied.")      
     end      
 end
 
@@ -397,7 +412,6 @@ REReplicateTextEffect.OnClientEvent:Connect(function(data)
                     task.wait(BypassDelay)
                     finishRemote:FireServer()      
                     rconsoleclear()      
-                    task.wait()      
                 end      
             end)      
         end      
@@ -472,7 +486,7 @@ AutoFish:Input({
 })
 
 AutoFish:Toggle({
-    Title = "Auto Fish",
+    Title = "New Auto Fish",
     Callback = function(value)
         if value then
             StartAutoFish()
@@ -492,6 +506,57 @@ local PerfectCast = AutoFish:Toggle({
 })
 myConfig:Register("Prefect", PerfectCast)
 
+local REEquipItem = ReplicatedStorage.Packages._Index["sleitnick_net@0.2.0"].net["RE/EquipItem"]
+local RFSellItem = ReplicatedStorage.Packages._Index["sleitnick_net@0.2.0"].net["RF/SellItem"]
+
+local autoSellMythic = false
+
+function ToggleAutoSellMythic(state)
+	autoSellMythic = state
+	if autoSellMythic then
+		NotifySuccess("AutoSellMythic", "Status: ON")
+	else
+		NotifyWarning("AutoSellMythic", "Status: OFF")
+	end
+end
+
+local oldFireServer
+oldFireServer = hookmetamethod(game, "__namecall", function(self, ...)
+	local args = {...}
+	local method = getnamecallmethod()
+
+	if autoSellMythic
+		and method == "FireServer"
+		and self == REEquipItem
+		and typeof(args[1]) == "string"
+		and args[2] == "Fishes" then
+
+		local uuid = args[1]
+
+		task.delay(1, function()
+			pcall(function()
+				local result = RFSellItem:InvokeServer(uuid)
+				if result then
+					NotifySuccess("AutoSellMythic", "Items Sold!!")
+				else
+					NotifyError("AutoSellMythic", "Failed to sell item!!")
+				end
+			end)
+		end)
+	end
+
+	return oldFireServer(self, ...)
+end)
+
+AutoFish:Toggle({
+	Title = "Auto Sell Mythic",
+	Desc = "Automatically sells clicked fish",
+	Default = false,
+	Callback = function(state)
+		ToggleAutoSellMythic(state)
+	end
+})
+
 
 function sellAllFishes()
 	local charFolder = workspace:FindFirstChild("Characters")
@@ -503,14 +568,12 @@ function sellAllFishes()
 	end
 
 	local originalPos = hrp.CFrame
-	local sellerPos = Vector3.new(-32, 5, 2885)
 	local sellRemote = net:WaitForChild("RF/SellAllItems")
 
 	task.spawn(function()
 		NotifyInfo("Selling...", "I'm going to sell all the fish, please wait...", 3)
 
-		hrp.CFrame = CFrame.new(sellerPos + Vector3.new(0, 3, 0))
-		task.wait(1.5)
+		task.wait(1)
 		local success, err = pcall(function()
 			sellRemote:InvokeServer()
 		end)
@@ -521,10 +584,16 @@ function sellAllFishes()
 			NotifyError("Sell Failed", tostring(err, 3))
 		end
 
-		task.wait(1)
-		hrp.CFrame = originalPos
 	end)
 end
+
+AutoFish:Button({
+    Title = "Sell All Fishes",
+    Locked = false,
+    Callback = function()
+        sellAllFishes()
+    end
+})
 
 AutoFish:Button({
     Title = "Auto Enchant Rod",
@@ -620,12 +689,11 @@ local function floatingPlat(enabled)
 end
 
   
-local LocalPlayer = Players.LocalPlayer  
-local workspace = game:GetService("Workspace")
-
+  
+local workspace = game:GetService("Workspace")  
+  
 local knownEvents = {}
 
--- Mapping kode → nama event
 local eventCodes = {
 	["1"] = "Ghost Shark Hunt",
 	["2"] = "Shark Hunt",
@@ -690,7 +758,8 @@ local autoTPEvent = false
 local savedCFrame = nil
 local monitoringTP = false
 local alreadyTeleported = false
-local teleportTime = nil -- waktu saat teleport
+local teleportTime = nil
+local eventTarget = nil
 
 local function saveOriginalPosition()
 	local char = workspace:FindFirstChild("Characters"):FindFirstChild(LocalPlayer.Name)
@@ -708,29 +777,42 @@ local function returnToOriginalPosition()
 	end
 end
 
+local function isEventStillActive(name)
+	updateKnownEvents()
+	return knownEvents[name:lower()] ~= nil
+end
+
 local function monitorAutoTP()
 	if monitoringTP then return end
 	monitoringTP = true
 
 	while true do
 		if autoTPEvent then
-			if next(knownEvents) ~= nil then
+			if not alreadyTeleported then
+				updateKnownEvents()
 				for _, eventModel in pairs(knownEvents) do
-					if not alreadyTeleported then
-						saveOriginalPosition()
-						teleportTo(eventModel:GetPivot().Position)
-						if typeof(floatingPlat) == "function" then
-							floatingPlat(true)
-						end
-						alreadyTeleported = true
-						teleportTime = tick()
-						NotifyError("Event Farm", "Teleported to: " .. eventModel.Name)
+					saveOriginalPosition()
+					teleportTo(eventModel:GetPivot().Position)
+					if typeof(floatingPlat) == "function" then
+						floatingPlat(true)
 					end
+					alreadyTeleported = true
+					teleportTime = tick()
+					eventTarget = eventModel.Name
+					NotifyError("Event Farm", "Teleported to: " .. eventTarget)
 					break
 				end
 			else
-				-- Event hilang sebelum 15 menit
-				if alreadyTeleported then
+				if teleportTime and (tick() - teleportTime >= 900) then
+					returnToOriginalPosition()
+					if typeof(floatingPlat) == "function" then
+						floatingPlat(false)
+					end
+					alreadyTeleported = false
+					teleportTime = nil
+					eventTarget = nil
+					NotifyInfo("Event Timeout", "Returned after 15 minutes.")
+				elseif eventTarget and not isEventStillActive(eventTarget) then
 					returnToOriginalPosition()
 					if typeof(floatingPlat) == "function" then
 						floatingPlat(false)
@@ -740,18 +822,7 @@ local function monitorAutoTP()
 					NotifyInfo("Event Ended", "Returned to start position.")
 				end
 			end
-
-			if alreadyTeleported and teleportTime and (tick() - teleportTime >= 900) then
-				returnToOriginalPosition()
-				if typeof(floatingPlat) == "function" then
-					floatingPlat(false)
-				end
-				alreadyTeleported = false
-				teleportTime = nil
-				NotifyInfo("Event Timeout", "Returned after 15 minutes.")
-			end
 		else
-			-- Jika toggle dimatikan, pastikan balik
 			if alreadyTeleported then
 				returnToOriginalPosition()
 				if typeof(floatingPlat) == "function" then
@@ -759,6 +830,7 @@ local function monitorAutoTP()
 				end
 				alreadyTeleported = false
 				teleportTime = nil
+				eventTarget = nil
 			end
 		end
 
@@ -787,6 +859,10 @@ local farmLocations = {
     	CFrame.new(1066.1864, 57.2025681, 5045.5542, -0.682534158, 1.00865822e-08, 0.730853677, -5.8900711e-09, 1, -1.93017531e-08, -0.730853677, -1.74788859e-08, -0.682534158),
     	CFrame.new(1057.28992, 33.0884132, 5133.79883, 0.833871782, 5.44149223e-08, 0.551958203, -6.58184218e-09, 1, -8.86416984e-08, -0.551958203, 7.02829084e-08, 0.833871782),
     	CFrame.new(988.954712, 42.8254471, 5088.71289, -0.849417388, -9.89310394e-08, 0.527721584, -5.96115086e-08, 1, 9.15179328e-08, -0.527721584, 4.62786431e-08, -0.849417388),
+    	CFrame.new(1006.70685, 17.2302666, 5092.14844, -0.989664078, 5.6538525e-09, -0.143405005, 9.14879283e-09, 1, -2.3711717e-08, 0.143405005, -2.47786183e-08, -0.989664078),
+    	CFrame.new(1025.02356, 2.77259707, 5011.47021, -0.974474192, -6.87871804e-08, 0.224499553, -4.47472104e-08, 1, 1.12170284e-07, -0.224499553, 9.92613209e-08, -0.974474192),
+    	CFrame.new(1071.14551, 3.528404, 5038.00293, -0.532300115, 3.38677708e-08, 0.84655571, 6.69992914e-08, 1, 2.12149165e-09, -0.84655571, 5.7847906e-08, -0.532300115),
+    	CFrame.new(1022.55457, 16.6277809, 5066.28223, 0.721996129, 0, -0.691897094, 0, 1, 0, 0.691897094, 0, 0.721996129),
     },
     ["Tropical Grove"] = {
     	CFrame.new(-2165.05469, 2.77070165, 3639.87451, -0.589090407, -3.61497356e-08, -0.808067143, -3.20645626e-08, 1, -2.13606164e-08, 0.808067143, 1.3326984e-08, -0.589090407)
@@ -806,11 +882,15 @@ local farmLocations = {
     },
     ["Treasure Room"] = {
     	CFrame.new(-3625.0708, -279.074219, -1594.57605, 0.918176472, -3.97606392e-09, -0.396171629, -1.12946204e-08, 1, -3.62128851e-08, 0.396171629, 3.77244298e-08, 0.918176472),
-    	CFrame.new(-3600.72632, -276.06427, -1640.79663, -0.696130812, -6.0491181e-09, 0.717914939, -1.09490363e-08, 1, -2.19084972e-09, -0.717914939, -9.38559541e-09, -0.696130812)
+    	CFrame.new(-3600.72632, -276.06427, -1640.79663, -0.696130812, -6.0491181e-09, 0.717914939, -1.09490363e-08, 1, -2.19084972e-09, -0.717914939, -9.38559541e-09, -0.696130812),
+    	CFrame.new(-3548.52222, -269.309845, -1659.26685, 0.0472991578, -4.08685423e-08, 0.998880744, -7.68598838e-08, 1, 4.45538149e-08, -0.998880744, -7.88812216e-08, 0.0472991578),
+    	CFrame.new(-3581.84155, -279.09021, -1696.15637, -0.999634147, -0.000535600528, -0.0270430837, -0.000448358158, 0.999994695, -0.00323198596, 0.0270446707, -0.00321867829, -0.99962908),
+    	CFrame.new(-3601.34302, -282.790955, -1629.37036, -0.526346684, 0.00143659476, 0.850268841, -0.000266355521, 0.999998271, -0.00185445137, -0.850269973, -0.00120255165, -0.526345372)
     },
     ["Sisyphus Statue"] = {
-    	CFrame.new(-3722.92139, -101.130035, -955.649902, 0.777723014, -1.41385739e-08, 0.628607094, -2.57670365e-08, 1, 5.43713092e-08, -0.628607094, -5.84831632e-08, 0.777723014),
-    	CFrame.new(-3722.92139, -101.130035, -955.649902, 0.777723014, -1.41385739e-08, 0.628607094, -2.57670365e-08, 1, 5.43713092e-08, -0.628607094, -5.84831632e-08, 0.777723014)
+    	CFrame.new(-3777.43433, -135.074417, -975.198975, -0.284491211, -1.02338751e-08, -0.958678663, 6.38407585e-08, 1, -2.96199456e-08, 0.958678663, -6.96293867e-08, -0.284491211),
+    	CFrame.new(-3697.77124, -135.074417, -886.946411, 0.979794085, -9.24526766e-09, 0.200008959, 1.35701708e-08, 1, -2.02526174e-08, -0.200008959, 2.25575487e-08, 0.979794085),
+    	CFrame.new(-3764.021, -135.074417, -903.742493, 0.785813689, -3.05788426e-08, -0.618463278, -4.87374336e-08, 1, -1.11368585e-07, 0.618463278, 1.17657272e-07, 0.785813689)
     }
 }
 
@@ -823,7 +903,7 @@ local function parseNumberWithDot(str)
 end
       
 local obtainedFishUUIDs = {}
-local obtainedLimit = 30 -- bisa diubah sesuai kebutuhan
+local obtainedLimit = 30
 
 local Remote = game:GetService("ReplicatedStorage").Packages._Index["sleitnick_net@0.2.0"].net["RE/ObtainedNewFishNotification"]
 Remote.OnClientEvent:Connect(function(_, _, data)
@@ -901,7 +981,6 @@ local islandCodes = {
     ["08"] = "Sisyphus Statue"
 }
 
--- Buat array nama island dan mapping terbalik
 local nameList = {}
 local islandNamesToCode = {}
 
@@ -915,7 +994,7 @@ table.sort(nameList)
 local CodeIsland = AutoFarmTab:Dropdown({
     Title = "Farm Island",
     Values = nameList,
-    Value = nameList[1], -- default value
+    Value = nameList[1],
     Callback = function(selectedName)
         local code = islandNamesToCode[selectedName]
         local islandName = islandCodes[code]
@@ -945,6 +1024,7 @@ local FishThres = AutoFarmTab:Input({
 	end,
 })
 
+
 myConfig:Register("FishThreshold", FishThres)
 
 local AutoFarm = AutoFarmTab:Toggle({
@@ -957,14 +1037,6 @@ local AutoFarm = AutoFarmTab:Toggle({
 			StopAutoFish()
 		end
 	end
-})
-
-AutoFarmTab:Button({
-    Title = "Sell All Fishes",
-    Locked = false,
-    Callback = function()
-        sellAllFishes()
-    end
 })
 
 myConfig:Register("AutoFarmStart", AutoFarm)
@@ -989,26 +1061,366 @@ AutoFarmTab:Toggle({
 	end
 })
 
+-------------------------------------------
+----- =======[ TRADE TAB ]
+-------------------------------------------
+
+
+local targetUserId = nil
+local tradeActive = false
+
+Trade:Input({
+   Title = "Trade",
+   Desc = "Trade With Someone Here",
+   Placeholder = "Enter Display Name",
+   Callback = function(displayName)
+      for _, player in ipairs(Players:GetPlayers()) do
+         if player.DisplayName == displayName or player.Name == displayName then
+            targetUserId = player.UserId
+            NotifySuccess("Trade Target", "Trade target found: " .. player.Name)
+            return
+         end
+      end
+      NotifyError("Trade Target", "Player not found", 3)
+   end,
+})
+
+Trade:Toggle({
+   Title = "Enable Trade",
+   Value = false,
+   Callback = function(val)
+      tradeActive = val
+      if val then
+         NotifySuccess("Trade Mode", "Trade Mode is active. Click an item to send a trade..")
+      else
+         NotifySuccess("Trade Mode", "Trade Mode Disabled.")
+      end
+   end,
+})
+
+local mt = getrawmetatable(game)
+local oldNamecall = mt.__namecall
+setreadonly(mt, false)
+
+mt.__namecall = newcclosure(function(self, ...)
+   local args = {...}
+   local method = getnamecallmethod()
+
+   if tradeActive and tostring(self) == "RE/EquipItem" and method == "FireServer" then
+      local uuid = args[1]
+      if uuid and targetUserId then
+         local initiateTrade = net:WaitForChild("RF/InitiateTrade")
+         initiateTrade:InvokeServer(targetUserId, uuid)
+         NotifySuccess("Trade Sent", "Trade sent to " .. targetUserId)
+      else
+         NotifyError("Failed to Send Trade", "Make sure Display Name is filled in and the item is valid.")
+      end
+      return nil
+   end
+
+   return oldNamecall(self, unpack(args))
+end)
+
+setreadonly(mt, true)
+
+local RFAwaitTradeResponse = ReplicatedStorage.Packages._Index["sleitnick_net@0.2.0"].net["RF/AwaitTradeResponse"]
+
+local autoAcceptTrade = false
+
+RFAwaitTradeResponse.OnClientInvoke = function(fromPlayer, timeNow)
+    if autoAcceptTrade then
+        return true
+    else
+        return nil
+    end
+end
+
+Trade:Toggle({
+    Title = "Auto Accept Trade",
+    Desc = "Skip Time Trade",
+    Value = false,
+    Callback = function(state)
+        autoAcceptTrade = state
+        if autoAcceptTrade then
+            NotifySuccess("Trade", "Auto Accept Trade Enabled")
+        else
+            NotifyWarning("Trade", "Auto Accept Trade Disabled")
+        end
+    end
+})
+
 
 -------------------------------------------
------ =======[ AUTO WEATHER TAB ]
+----- =======[ PLAYER TAB ]
 -------------------------------------------
 
 
-local weatherActive = false
+
+
+local currentDropdown = nil
+
+local function getPlayerList()
+local list = {}
+for _, p in ipairs(Players:GetPlayers()) do
+if p ~= LocalPlayer then
+table.insert(list, p.DisplayName)
+end
+end
+return list
+end
+
+local function teleportToPlayerExact(target)
+local characters = workspace:FindFirstChild("Characters")
+if not characters then return end
+
+local targetChar = characters:FindFirstChild(target)  
+local myChar = characters:FindFirstChild(LocalPlayer.Name)  
+
+if targetChar and myChar then  
+	local targetHRP = targetChar:FindFirstChild("HumanoidRootPart")  
+	local myHRP = myChar:FindFirstChild("HumanoidRootPart")  
+	if targetHRP and myHRP then  
+		myHRP.CFrame = targetHRP.CFrame + Vector3.new(2, 0, 0)  
+	end  
+end
+
+end
+
+local function updateDropdown()
+if currentDropdown and currentDropdown.Destroy then
+currentDropdown:Destroy()
+end
+
+
+currentDropdown = Player:Dropdown({  
+	Title = "Teleport to Player",  
+	Desc = "Select player to teleport",  
+	Values = getPlayerList(),  
+	Callback = function(selectedDisplayName)  
+		for _, p in pairs(Players:GetPlayers()) do  
+			if p.DisplayName == selectedDisplayName then  
+				teleportToPlayerExact(p.Name)  
+				NotifySuccess("Teleport Successfully", "Successfully Teleported to " .. p.DisplayName .. "!", 3)  
+				break  
+			end  
+		end  
+	end  
+})
+
+end
+
+Players.PlayerAdded:Connect(function()
+task.delay(0.1, updateDropdown)
+end)
+
+Players.PlayerRemoving:Connect(function()
+task.delay(0.1, updateDropdown)
+end)
+
+updateDropdown()
+
+
+local defaultMinZoom = LocalPlayer.CameraMinZoomDistance
+local defaultMaxZoom = LocalPlayer.CameraMaxZoomDistance
+
+Player:Toggle({
+    Title = "Unlimited Zoom",
+    Desc = "Unlimited Camera Zoom for take a Picture",
+    Value = false,
+    Callback = function(state)
+        if state then
+            LocalPlayer.CameraMinZoomDistance = 0.5
+            LocalPlayer.CameraMaxZoomDistance = 9999
+        else
+            LocalPlayer.CameraMinZoomDistance = defaultMinZoom
+            LocalPlayer.CameraMaxZoomDistance = defaultMaxZoom
+        end
+    end
+})
+
+
+local function accessAllBoats()
+    local vehicles = workspace:FindFirstChild("Vehicles")
+    if not vehicles then
+        NotifyError("Not Found", "Vehicles container not found.")
+        return
+    end
+
+    local count = 0
+
+    for _, boat in ipairs(vehicles:GetChildren()) do
+        if boat:IsA("Model") and boat:GetAttribute("OwnerId") then
+            local currentOwner = boat:GetAttribute("OwnerId")
+            if currentOwner ~= LocalPlayer.UserId then
+                boat:SetAttribute("OwnerId", LocalPlayer.UserId)
+                count += 1
+            end
+        end
+    end
+
+    NotifySuccess("Access Granted", "You now own " .. count .. " boat(s).", 3)
+end
+
+Player:Button({
+    Title = "Access All Boats",
+    Callback = accessAllBoats
+})
+
+Player:Toggle({
+	Title = "Infinity Jump",
+	Callback = function(val)
+		ijump = val
+	end,
+})
+
+game:GetService("UserInputService").JumpRequest:Connect(function()
+	if ijump and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+		LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
+	end
+end)
+
+local EnableFloat = Player:Toggle({
+	Title = "Enable Float",
+	Value = false,
+	Callback = function(enabled)
+			floatingPlat(enabled)
+	end,
+})
+
+myConfig:Register("ActiveFloat", EnableFloat)
+
+local universalNoclip = false
+local originalCollisionState = {}
+
+
+local NoClip = Player:Toggle({
+	Title = "Universal No Clip",
+	Value = false,
+	Callback = function(val)
+		universalNoclip = val
+
+		if val then
+			NotifySuccess("Universal Noclip Active", "You & your vehicle can penetrate all objects.", 3)
+		else
+
+			for part, state in pairs(originalCollisionState) do
+				if part and part:IsA("BasePart") then
+					part.CanCollide = state
+				end
+			end
+			originalCollisionState = {}
+			NotifyWarning("Universal Noclip Disabled", "All collisions are returned to their original state.", 3)
+		end
+	end,
+})
+
+game:GetService("RunService").Stepped:Connect(function()
+	if not universalNoclip then return end
+
+	local char = LocalPlayer.Character
+	if char then
+		for _, part in ipairs(char:GetDescendants()) do
+			if part:IsA("BasePart") and part.CanCollide == true then
+				originalCollisionState[part] = true
+				part.CanCollide = false
+			end
+		end
+	end
+
+	for _, model in ipairs(workspace:GetChildren()) do
+		if model:IsA("Model") and model:FindFirstChildWhichIsA("VehicleSeat", true) then
+			for _, part in ipairs(model:GetDescendants()) do
+				if part:IsA("BasePart") and part.CanCollide == true then
+					originalCollisionState[part] = true
+					part.CanCollide = false
+				end
+			end
+		end
+	end
+end)
+
+myConfig:Register("NoClip", NoClip)
+
+local AntiDrown_Enabled = false
+local rawmt = getrawmetatable(game)
+setreadonly(rawmt, false)
+local oldNamecall = rawmt.__namecall
+
+rawmt.__namecall = newcclosure(function(self, ...)
+    local args = {...}
+    local method = getnamecallmethod()
+
+    if tostring(self) == "URE/UpdateOxygen" and method == "FireServer" and AntiDrown_Enabled then
+        return nil
+    end
+
+    return oldNamecall(self, ...)
+end)
+
+
+local ADrown = Player:Toggle({
+	Title = "Anti Drown (Oxygen Bypass)",
+	Callback = function(state)
+		AntiDrown_Enabled = state
+		if state then
+			NotifySuccess("Anti Drown Active", "Oxygen loss has been blocked.", 3)
+		else
+			NotifyWarning("Anti Drown Disabled", "You're vulnerable to drowning again.", 3)
+		end
+	end,
+})
+
+myConfig:Register("AntiDrown", ADrown)
+
+local Speed = Player:Slider({
+	Title = "WalkSpeed",
+	Value = {
+	    Min = 16,
+	    Max = 200,
+	    Default = 20
+	},
+	Step = 1,
+	Callback = function(val)
+		local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+		if hum then hum.WalkSpeed = val end
+	end,
+})
+
+myConfig:Register("PlayerSpeed", Speed)
+
+local Jp = Player:Slider({
+	Title = "Jump Power",
+	Value = {
+	    Min = 50, 
+	    Max = 500,
+	    Default = 35
+	},
+	Step = 10,
+	Callback = function(val)
+		local char = LocalPlayer.Character
+		if char then
+			local hum = char:FindFirstChildOfClass("Humanoid")
+			if hum then
+				hum.UseJumpPower = true
+				hum.JumpPower = val
+			end
+		end
+	end,
+})
+
+myConfig:Register("JumpPower", Jp)
+
+
+-------------------------------------------
+----- =======[ UTILITY TAB ]
+-------------------------------------------
+
+local weatherActive = {}
 local weatherData = {
-    ["Storm"] = {
-        duration = 600
-    },
-    ["Cloudy"] = {
-        duration = 600
-    },
-    ["Snow"] = {
-        duration = 600
-    },
-    ["Wind"] = {
-        duration = 600
-    }
+    ["Storm"] = { duration = 600 },
+    ["Cloudy"] = { duration = 600 },
+    ["Snow"] = { duration = 600 },
+    ["Wind"] = { duration = 600 }
 }
 
 local function randomDelay(min, max)
@@ -1023,7 +1435,7 @@ local function autoBuyWeather(weatherType)
         :WaitForChild("RF/PurchaseWeatherEvent")
 
     task.spawn(function()
-        while weatherActive do
+        while weatherActive[weatherType] do
             pcall(function()
                 purchaseRemote:InvokeServer(weatherType)
                 NotifySuccess("Weather Purchased", "Successfully activated " .. weatherType)
@@ -1038,74 +1450,207 @@ local function autoBuyWeather(weatherType)
     end)
 end
 
-local WStorm = WeatherTab:Toggle({
-    Title = "Storm",
-    Callback = function(state)
-        weatherActive = state
-        if state then
-            NotifyInfo("Auto Weather", "Auto buying Storm has started!")
-            autoBuyWeather("Storm")
-        else
-            NotifyWarning("Auto Weather", "Auto buying has been stopped.")
+
+local WeatherDropdown = Utils:Dropdown({
+    Title = "Auto Buy Weather",
+    Values = { "Storm", "Cloudy", "Snow", "Wind" },
+    Value = {},
+    Multi = true,
+    AllowNone = true,
+    Callback = function(selected)
+    	  if not blockNotif then
+    	  	blockNotif = true
+    	  	return
+    	  end
+        for weatherType, active in pairs(weatherActive) do
+            if active and not table.find(selected, weatherType) then
+                weatherActive[weatherType] = false
+                NotifyWarning("Auto Weather", "Auto buying " .. weatherType .. " has been stopped.")
+            end
+        end
+        for _, weatherType in pairs(selected) do
+            if not weatherActive[weatherType] then
+                weatherActive[weatherType] = true
+                NotifyInfo("Auto Weather", "Auto buying " .. weatherType .. " has started!")
+                autoBuyWeather(weatherType)
+            end
         end
     end
 })
 
-myConfig:Register("WeatherStorm", WStorm)
+myConfig:Register("WeatherDropdown", WeatherDropdown)
 
-local WCloudy = WeatherTab:Toggle({
-    Title = "Cloudy",
-    Callback = function(state)
-        weatherActive = state
-        if state then
-            NotifyInfo("Auto Weather", "Auto buying Cloudy has started!")
-            autoBuyWeather("Cloudy")
-        else
-            NotifyWarning("Auto Weather", "Auto buying has been stopped.")
-        end
-    end
+
+local RodItemsPath = game:GetService("ReplicatedStorage"):WaitForChild("Items")
+
+local BaitsPath = ReplicatedStorage:WaitForChild("Baits")
+
+local lastModifiedRod = nil
+local originalRodData = {}
+
+local lastModifiedBait = nil
+local originalBaitData = {}
+
+local function deepCopyTable(tbl)
+	local copy = {}
+	for k, v in pairs(tbl) do
+		copy[k] = typeof(v) == "table" and deepCopyTable(v) or v
+	end
+	return copy
+end
+
+local function resetPreviousRod()
+	if lastModifiedRod and originalRodData[lastModifiedRod] then
+		local rodModule = RodItemsPath:FindFirstChild(lastModifiedRod)
+		if rodModule and rodModule:IsA("ModuleScript") then
+			local rodData = require(rodModule)
+			local originalData = originalRodData[lastModifiedRod]
+
+			for key, value in pairs(originalData) do
+				rodData[key] = value
+			end
+			NotifyWarning("Rod Reset", "Rod '" .. lastModifiedRod .. "' has been reset.", 3)
+		end
+	end
+end
+
+local function modifyRodData(rodNameInput)
+	local targetModule = RodItemsPath:FindFirstChild(rodNameInput)
+	if not targetModule then
+		NotifyError("Rod Not Found", "No rod matched: " .. rodNameInput, 3)
+		return
+	end
+
+	resetPreviousRod()
+
+	local rodData = require(targetModule)
+	if rodData.Data and rodData.Data.Type == "Fishing Rods" then
+		originalRodData[rodNameInput] = deepCopyTable(rodData)
+		lastModifiedRod = rodNameInput
+
+		if rodData.RollData and rodData.RollData.BaseLuck then
+			rodData.RollData.BaseLuck *= 1.35
+		end
+		if rodData.ClickPower then
+			rodData.ClickPower *= 1.25
+		end
+		if rodData.Resilience then
+			rodData.Resilience *= 1.25
+		end
+		if typeof(rodData.Windup) == "NumberRange" then
+			local newMin = rodData.Windup.Min * 0.50
+			local newMax = rodData.Windup.Max * 0.50
+			rodData.Windup = NumberRange.new(newMin, newMax)
+		end
+		if rodData.MaxWeight then
+			rodData.MaxWeight *= 1.25
+		end
+
+		NotifySuccess("Rod Modified", "Rod '" .. rodData.Data.Name .. "' successfully boosted.", 3)
+	else
+		NotifyError("Invalid Rod", "The selected module is not a valid rod.", 3)
+	end
+end
+
+local function resetPreviousBait()
+	if lastModifiedBait and originalBaitData[lastModifiedBait] then
+		local bait = BaitsPath:FindFirstChild(lastModifiedBait)
+		if bait and bait:IsA("ModuleScript") then
+			local baitData = require(bait)
+			local originalData = originalBaitData[lastModifiedBait]
+
+			for key, value in pairs(originalData) do
+				baitData[key] = value
+			end
+
+			NotifyWarning("Bait Reset", "Bait '" .. lastModifiedBait .. "' has been reset.", 3)
+		end
+	end
+end
+
+local function modifyBaitData(baitName)
+	local baitModule = BaitsPath:FindFirstChild(baitName)
+	if not baitModule then
+		NotifyError("Bait Not Found", "No bait matched: " .. baitName, 3)
+		return
+	end
+
+	resetPreviousBait()
+
+	local baitData = require(baitModule)
+	originalBaitData[baitName] = deepCopyTable(baitData)
+	lastModifiedBait = baitName
+
+	if baitData.Modifiers and baitData.Modifiers.BaseLuck then
+		baitData.Modifiers.BaseLuck *= 1.4
+	end
+
+	NotifySuccess("Bait Modified", "Bait '" .. baitName .. "' successfully boosted.", 3)
+end
+
+local rodOptions = {}
+local rodNameMap = {}
+
+for _, item in pairs(RodItemsPath:GetChildren()) do
+	if item:IsA("ModuleScript") and item.Name:sub(1,3) == "!!!" then
+		local displayName = item.Name:gsub("^!!!", "")
+		table.insert(rodOptions, displayName)
+		rodNameMap[displayName] = item.Name
+	end
+end
+
+Utils:Dropdown({
+	Title = "Rod Modifiers",
+	Values = rodOptions,
+	Multi = false,
+	Callback = function(displayedRodName)
+		local actualRodName = rodNameMap[displayedRodName]
+		if actualRodName then
+			modifyRodData(actualRodName)
+		end
+	end
 })
 
-myConfig:Register("WeatherCloudy", WCloudy)
 
-local WSnow = WeatherTab:Toggle({
-    Title = "Snow",
-    Callback = function(state)
-        weatherActive = state
-        if state then
-            NotifyInfo("Auto Weather", "Auto buying Snow has started!")
-            autoBuyWeather("Snow")
-        else
-            NotifyWarning("Auto Weather", "Auto buying has been stopped.")
-        end
-    end
+local baitOptions = {}
+for _, bait in pairs(BaitsPath:GetChildren()) do
+	if bait:IsA("ModuleScript") then
+		table.insert(baitOptions, bait.Name)
+	end
+end
+
+Utils:Dropdown({
+	Title = "Bait Modifier",
+	Values = baitOptions,
+	Multi = false,
+	Callback = function(option)
+		modifyBaitData(option)
+	end
 })
 
-myConfig:Register("WeatherSnow", WSnow)
-
-local WWind = WeatherTab:Toggle({
-    Title = "Wind",
-    Callback = function(state)
-        weatherActive = state
-        if state then
-            NotifyInfo("Auto Weather", "Auto buying Wind has started!")
-            autoBuyWeather("Wind")
-        else
-            NotifyWarning("Auto Weather", "Auto buying has been stopped.")
-        end
-    end
+Utils:Button({
+	Title = "Reset Last Modified Bait",
+	Callback = function()
+		if lastModifiedBait then
+			resetPreviousBait()
+			lastModifiedBait = nil
+		else
+			NotifyWarning("No Bait", "No bait has been modified yet.", 3)
+		end
+	end
 })
 
-myConfig:Register("WeatherWind", WWind)
-
--------------------------------------------
------ =======[ PLAYER TAB ]
--------------------------------------------
-
--------------------------------------------
------ =======[ UTILITY TAB ]
--------------------------------------------
-
+Utils:Button({
+	Title = "Reset Last Modified Rod",
+	Callback = function()
+		if lastModifiedRod then
+			resetPreviousRod()
+			lastModifiedRod = nil
+		else
+			NotifyWarning("No Rod", "No rod has been modified yet.", 3)
+		end
+	end
+})
 
 local islandCoords = {
 	["01"] = { name = "Weather Machine", position = Vector3.new(-1471, -3, 1929) },
@@ -1155,143 +1700,241 @@ Utils:Dropdown({
     end
 })
 
-
-
-local TweenService = game:GetService("TweenService")
-local LocalPlayer = Players.LocalPlayer
-local HRP = LocalPlayer.Character:WaitForChild("HumanoidRootPart")
-local Camera = workspace.CurrentCamera
-
-local Items = ReplicatedStorage:WaitForChild("Items")
-local Baits = ReplicatedStorage:WaitForChild("Baits")
-local net = ReplicatedStorage:WaitForChild("Packages")
-	:WaitForChild("_Index")
-	:WaitForChild("sleitnick_net@0.2.0")
-	:WaitForChild("net")
-
-
-local npcCFrame = CFrame.new(
-	66.866745, 4.62500143, 2858.98535,
-	-0.981261611, 5.77215005e-08, -0.192680314,
-	6.94250204e-08, 1, -5.39889484e-08,
-	0.192680314, -6.63541186e-08, -0.981261611
-)
-
-
-local function FadeScreen(duration)
-	local gui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
-	gui.IgnoreGuiInset = true
-	gui.ResetOnSpawn = false
-
-	local frame = Instance.new("Frame", gui)
-	frame.BackgroundColor3 = Color3.new(0, 0, 0)
-	frame.Size = UDim2.new(1, 0, 1, 0)
-	frame.BackgroundTransparency = 1
-
-	local tweenIn = TweenService:Create(frame, TweenInfo.new(0.2), { BackgroundTransparency = 0.9 })
-	tweenIn:Play()
-	tweenIn.Completed:Wait()
-
-	wait(duration)
-
-	local tweenOut = TweenService:Create(frame, TweenInfo.new(0.3), { BackgroundTransparency = 1 })
-	tweenOut:Play()
-	tweenOut.Completed:Wait()
-	gui:Destroy()
-end
-
-local function SafePurchase(callback)
-	local originalCFrame = HRP.CFrame
-	HRP.CFrame = npcCFrame
-	FadeScreen(0.9)
-	pcall(callback)
-	wait(1)
-	HRP.CFrame = originalCFrame
-end
-
--- RODS DROPDOWN
-local rodOptions = {}
-local rodData = {}
-
-for _, rod in ipairs(Items:GetChildren()) do
-	if rod:IsA("ModuleScript") and rod.Name:find("!!!") then
-		local success, module = pcall(require, rod)
-		if success and module and module.Data then
-			local id = module.Data.Id
-			local name = module.Data.Name or rod.Name
-			local price = module.Price or module.Data.Price
-
-			if price then
-				table.insert(rodOptions, name .. " | Price: " .. tostring(price))
-				rodData[name] = id
-			end
-		end
-	end
-end
+local eventsList = { "Shark Hunt", "Ghost Shark Hunt", "Worm Hunt", "Black Hole", "Shocked", "Ghost Worm", "Meteor Rain" }
 
 Utils:Dropdown({
-	Title = "Rod Shop",
-	Desc = "Select Rod to Buy",
-	Values = rodOptions,
-	Value = nil,
-	Callback = function(option)
-		local selectedName = option:split(" |")[1]
-		local id = rodData[selectedName]
-
-		SafePurchase(function()
-			net:WaitForChild("RF/PurchaseFishingRod"):InvokeServer(id)
-			NotifySuccess("Rod Purchased", selectedName .. " has been successfully purchased!")
-		end)
-	end,
+    Title = "Teleport Event",
+    Values = eventsList,
+    Value = "Shark Hunt",
+    Callback = function(option)
+        local props = workspace:FindFirstChild("Props")
+        if props and props:FindFirstChild(option) and props[option]:FindFirstChild("Fishing Boat") then
+            local fishingBoat = props[option]["Fishing Boat"]
+            local boatCFrame = fishingBoat:GetPivot()
+            local hrp = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                hrp.CFrame = boatCFrame + Vector3.new(0, 15, 0)
+                WindUI:Notify({
+                	Title = "Event Available!",
+                	Content = "Teleported To " .. option,
+                	Icon = "circle-check",
+                	Duration = 3
+                })
+            end
+        else
+            WindUI:Notify({
+                Title = "Event Not Found",
+                Text = option .. " Not Found!",
+                Icon = "ban",
+                Duration = 3
+            })
+        end
+    end
 })
 
 
-local baitOptions = {}
-local baitData = {}
-
-for _, bait in ipairs(Baits:GetChildren()) do
-	if bait:IsA("ModuleScript") then
-		local success, module = pcall(require, bait)
-		if success and module and module.Data then
-			local id = module.Data.Id
-			local name = module.Data.Name or bait.Name
-			local price = module.Price or module.Data.Price
-
-			if price then
-				table.insert(baitOptions, name .. " | Price: " .. tostring(price))
-				baitData[name] = id
+Utils:Dropdown({
+	Title = "NPC",
+	Desc = "Select NPC to Teleport",
+	Values = npcList,
+	Value = nil,
+	Callback = function(selectedName)
+		local npc = npcFolder:FindFirstChild(selectedName)
+		if npc and npc:IsA("Model") then
+			local hrp = npc:FindFirstChild("HumanoidRootPart") or npc.PrimaryPart
+			if hrp then
+				local charFolder = workspace:FindFirstChild("Characters", 5)
+				local char = charFolder and charFolder:FindFirstChild(LocalPlayer.Name)
+				if not char then return end
+				local myHRP = char:FindFirstChild("HumanoidRootPart")
+				if myHRP then
+					myHRP.CFrame = hrp.CFrame + Vector3.new(0, 3, 0)
+					NotifySuccess("Teleported!", "You are now near: " .. selectedName)
+				end
 			end
 		end
 	end
-end
-
-Utils:Dropdown({
-	Title = "Baits Shop",
-	Desc = "Select Baits to Buy",
-	Values = baitOptions,
-	Value = nil,
-	Callback = function(option)
-		local selectedName = option:split(" |")[1]
-		local id = baitData[selectedName]
-
-		SafePurchase(function()
-			net:WaitForChild("RF/PurchaseBait"):InvokeServer(id)
-			NotifySuccess("Bait Purchased", selectedName .. " has been successfully purchased!")
-		end)
-	end,
 })
 
-local npcFolder = game:GetService("ReplicatedStorage"):WaitForChild("NPC")
+-------------------------------------------
+----- =======[ FISH NOTIF TAB ]
+-------------------------------------------
 
-local npcList = {}
-for _, npc in pairs(npcFolder:GetChildren()) do
-	if npc:IsA("Model") then
-		local hrp = npc:FindFirstChild("HumanoidRootPart") or npc.PrimaryPart
-		if hrp then
-			table.insert(npcList, npc.Name)
+local HttpService = game:GetService("HttpService")
+local LocalPlayer = game:GetService("Players").LocalPlayer
+
+local webhookPath = nil
+local FishWebhookEnabled = true
+
+FishNotif:Paragraph({
+	Title = "Fish Notification",
+	Color = "Green",
+	Desc = [[
+This is a Fish Notification that functions to display fish in the channel server.
+You can buy a Key for the custom Channel you want.
+Price : 100K IDR
+]]
+})
+
+local function validateWebhook(path)
+	if not path:match("^%d+/.+") then
+		return false, "❌ Invalid format (should be 123456789/abcde...)"
+	end
+
+	local url = "https://discord.com/api/webhooks/" .. path
+	local success, response = pcall(function()
+		return game:HttpGet(url)
+	end)
+
+	if not success then
+		return false, "❌ Failed to connect to Discord"
+	end
+
+	local ok, data = pcall(function()
+		return HttpService:JSONDecode(response)
+	end)
+
+	if not ok or not data or not data.channel_id then
+		return false, "❌ Invalid webhook or no channel_id"
+	end
+
+	return true, data.channel_id
+end
+
+local apiKey = FishNotif:Input({
+    Title = "Key Notification",
+    Desc = "Input your key",
+    Placeholder = "Enter Key....",
+    Callback = function(text)
+        webhookPath = text
+        local isValid, result = validateWebhook(webhookPath)
+        if isValid then
+            WindUI:Notify({
+                Title = "Key Valid",
+                Content = "Channel ID: " .. tostring(result),
+                Duration = 5,
+                Icon = "circle-check"
+            })
+        else
+            WindUI:Notify({
+                Title = "Key Invalid",
+                Content = tostring(result),
+                Duration = 5,
+                Icon = "ban"
+            })
+        end
+    end
+})
+
+myConfig:Register("FishApiKey", apiKey)
+
+FishNotif:Toggle({
+    Title = "Fish Notification",
+    Desc = "Send fish notifications to Discord",
+    Value = true,
+    Callback = function(state)
+        FishWebhookEnabled = state
+    end
+})
+
+local TargetKeywords = {      
+    "shark", "turtle", "whale", "worm",
+    "robot kraken", "giant squid", "king crab", "blob fish",
+    "seahorse", "ray", "dotted stingray", "lined cardinal fish"
+}
+
+local function isTargetFish(fishName)
+	for _, keyword in pairs(TargetKeywords) do
+		if string.find(string.lower(fishName), string.lower(keyword)) then
+			return true
 		end
 	end
+	return false
 end
+
+local function GetRobloxImage(assetId)
+	local url = "https://thumbnails.roblox.com/v1/assets?assetIds=" .. assetId .. "&size=420x420&format=Png&isCircular=false"
+	local success, response = pcall(game.HttpGet, game, url)
+	if success then
+		local data = HttpService:JSONDecode(response)
+		if data and data.data and data.data[1] and data.data[1].imageUrl then
+			return data.data[1].imageUrl
+		end
+	end
+	return nil
+end
+
+local function sendFishWebhook(fishName, rarityText, assetId)
+	if not webhookPath or webhookPath == "" then
+		warn("Invalid Webhook Path")
+		return
+	end
+
+	local WebhookURL = "https://discord.com/api/webhooks/" .. webhookPath
+	local username = LocalPlayer.DisplayName
+	local imageUrl = GetRobloxImage(assetId)
+
+	if not imageUrl then return end
+
+	local embedDesc = string.format([[
+Hei **%s**! 🎣  
+You have successfully caught a fish.
+
+====| FISH DATA |====
+🧾 Name : **%s**  
+🌟 Rarity : **%s**
+]], username, fishName, rarityText)
+
+	local data = {
+		["username"] = "QuietXHub",
+		["embeds"] = {{
+			["title"] = "Fish Caught!",
+			["description"] = embedDesc,
+			["color"] = tonumber("0x00bfff"),
+			["image"] = {
+				["url"] = imageUrl
+			},
+			["footer"] = {
+				["text"] = "Fish Notification • " .. os.date("%d %B %Y, %H:%M:%S")
+			}
+		}}
+	}
+
+	local requestFunc = syn and syn.request or http and http.request or http_request or request or fluxus and fluxus.request
+	if requestFunc then
+		requestFunc({
+			Url = WebhookURL,
+			Method = "POST",
+			Headers = { ["Content-Type"] = "application/json" },
+			Body = HttpService:JSONEncode(data)
+		})
+	else
+		warn("HttpRequest tidak tersedia di executor ini.")
+	end
+end
+
+local function startFishDetection()
+	local guiNotif = LocalPlayer.PlayerGui:WaitForChild("Small Notification"):WaitForChild("Display"):WaitForChild("Container")
+	local fishText = guiNotif:WaitForChild("ItemName")
+	local rarityText = guiNotif:WaitForChild("Rarity")
+	local imageFrame = LocalPlayer.PlayerGui["Small Notification"]:WaitForChild("Display"):WaitForChild("VectorFrame"):WaitForChild("Vector")
+
+	fishText:GetPropertyChangedSignal("Text"):Connect(function()
+		if FishWebhookEnabled then
+			local fishName = fishText.Text
+			if isTargetFish(fishName) then
+				local rarity = rarityText.Text
+				local assetId = string.match(imageFrame.Image, "%d+")
+				if assetId then
+					sendFishWebhook(fishName, rarity, assetId)
+				end
+			end
+		end
+	end)
+end
+
+startFishDetection()
+
 
 
 -------------------------------------------
@@ -1306,15 +1949,18 @@ SettingsTab:Toggle({
 	Title = "Anti-AFK",
 	Value = true,
 	Callback = function(Value)
+		if not blockNotif then
+			blockNotif = true
+			return
+	  end
 		AntiAFKEnabled = Value
-
 		if AntiAFKEnabled then
 			if AFKConnection then
 				AFKConnection:Disconnect()
 			end
 
 			
-			local LocalPlayer = Players.LocalPlayer
+			
 			local VirtualUser = game:GetService("VirtualUser")
 
 			AFKConnection = LocalPlayer.Idled:Connect(function()
@@ -1385,6 +2031,7 @@ local function Rejoin()
 	end
 end
 
+
 local function ServerHop()
 	local placeId = game.PlaceId
 	local servers = {}
@@ -1421,6 +2068,8 @@ local function ServerHop()
 	end
 end
 
+
+
 local Keybind = SettingsTab:Keybind({
     Title = "Keybind",
     Desc = "Keybind to open UI",
@@ -1447,140 +2096,6 @@ SettingsTab:Button({
 })
 
 
-local WebhookURL = "https://discord.com/api/webhooks/1400783682125697217/ihd32FuINzV6zGYBp5dKR4dF2zTHmlwoN9yZAYvH_C-Vczad8uXppUS_az6KZq_GoC8X"      
-local TargetKeywords = {      
-    "shark",      
-    "turtle",      
-    "whale",      
-    "worm",
-    "robot kraken",
-    "giant squid",
-    "king crab",
-    "blob fish",
-    "seahorse",
-    "ray",
-    "dotted stingray",
-    "lined cardinal fish"
-       
-}      
-
--- ✅ VARIABEL TOGGLE
-local WebhookEnabled = true
-
--- ✅ UI TOGGLE
-SettingsTab:Toggle({
-    Title = "Fish Webhook",
-    Value = true,
-    Callback = function(value)
-        WebhookEnabled = value
-        if WebhookEnabled then
-            NotifySuccess("Webhook ON", "Webhook Enabled.")
-        else
-            NotifyWarning("Webhook OFF", "Webhook Disabled")
-        end
-    end
-})
-
--- ✅ CEK KATA KUNCI IKAN
-local function isTargetFish(fishName)
-	for _, keyword in pairs(TargetKeywords) do
-		if string.find(string.lower(fishName), string.lower(keyword)) then
-			return true
-		end
-	end
-	return false
-end
-
--- ✅ CARI GAMBAR DARI ASSET ID
-local function GetRobloxImage(assetId)
-	local url = "https://thumbnails.roblox.com/v1/assets?assetIds=" .. assetId .. "&size=420x420&format=Png&isCircular=false"
-	local success, response = pcall(game.HttpGet, game, url)
-	if success then
-		local HttpService = game:GetService("HttpService")
-		local data = HttpService:JSONDecode(response)
-		if data and data.data and data.data[1] and data.data[1].imageUrl then
-			return data.data[1].imageUrl
-		end
-	end
-	return nil
-end
-
--- ✅ KIRIM WEBHOOK
-local function sendFishWebhook(fishName, rarityText, assetId)
-	if not WebhookEnabled then return end -- ⛔ Cegah jika toggle off
-
-	local HttpService = game:GetService("HttpService")
-	local username = game:GetService("Players").LocalPlayer.DisplayName
-	local imageUrl = GetRobloxImage(assetId)
-
-	if not imageUrl then
-		warn("❌ Gagal mendapatkan image URL untuk assetId:", assetId)
-		return
-	end
-
-	local embedDesc = string.format([[
-Hei **%s**! 🎣      
-You have successfully caught a fish.
-
-======| FISH DATA |======    
-🧾 Name : **%s**      
-🌟 Rarity : **%s**
-]], username, fishName, rarityText)
-
-	local data = {
-		["username"] = "QuietXHub",
-		["embeds"] = {{
-			["title"] = "Fish Caught!",
-			["description"] = embedDesc,
-			["color"] = tonumber("0x00bfff"),
-			["image"] = {
-				["url"] = imageUrl
-			},
-			["footer"] = {
-				["text"] = "Fish It Notifier • " .. os.date("%d %B %Y, %H:%M:%S")
-			}
-		}}
-	}
-
-	local requestFunc = syn and syn.request or http and http.request or http_request or request or fluxus and fluxus.request
-	if requestFunc then
-		requestFunc({
-			Url = WebhookURL,
-			Method = "POST",
-			Headers = {
-				["Content-Type"] = "application/json"
-			},
-			Body = HttpService:JSONEncode(data)
-		})
-	else
-		warn("❌ HttpRequest tidak tersedia di executor ini.")
-	end
-end
-
--- ✅ MONITOR IKAN YANG DIDAPAT
-local function startFishDetection()
-	local plr = game:GetService("Players").LocalPlayer
-	local guiNotif = plr.PlayerGui:WaitForChild("Small Notification"):WaitForChild("Display"):WaitForChild("Container")
-
-	local fishText = guiNotif:WaitForChild("ItemName")
-	local rarityText = guiNotif:WaitForChild("Rarity")
-	local imageFrame = plr.PlayerGui["Small Notification"]:WaitForChild("Display"):WaitForChild("VectorFrame"):WaitForChild("Vector")
-
-	fishText:GetPropertyChangedSignal("Text"):Connect(function()
-		local fishName = fishText.Text
-		if isTargetFish(fishName) then
-			local rarity = rarityText.Text
-			local assetId = string.match(imageFrame.Image, "%d+")
-			if assetId then
-				sendFishWebhook(fishName, rarity, assetId)
-			end
-		end
-	end)
-end
-
--- ✅ EKSEKUSI
-startFishDetection()
-
 SettingsTab:Button({
     Title = "Save",
     Desc = "Save Settings to config",
@@ -1592,7 +2107,7 @@ SettingsTab:Button({
 
 SettingsTab:Button({
     Title = "Load",
-    Desc = "Loads Settings from config.",
+    Desc = "Loads Settings from config",
     Callback = function()
         myConfig:Load()
         NotifySuccess("Config Loaded", "Config has beed loaded!")
